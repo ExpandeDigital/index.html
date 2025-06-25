@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Currículum Interactivo - Cristian Jofré Donoso</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .scene {
+            display: none;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+        .scene.active {
+            display: flex;
+            opacity: 1;
+        }
+        .text-glow {
+            text-shadow: 0 0 8px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+        .stat-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .fade-in-up {
+            animation: fadeInUp 1s ease-out forwards;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-4xl aspect-video bg-black rounded-2xl shadow-2xl overflow-hidden relative flex flex-col">
+        <!-- Contenedor del video -->
+        <div id="video-container" class="flex-grow flex items-center justify-center p-8 md:p-12">
+            <!-- Las escenas se inyectarán aquí -->
+        </div>
+
+        <!-- Barra de progreso -->
+        <div class="w-full bg-gray-700 h-2">
+            <div id="progress-bar" class="bg-blue-500 h-2" style="width: 0%; transition: width 0.5s linear;"></div>
+        </div>
+
+        <!-- Controles -->
+        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-4 z-10">
+            <button id="play-pause-btn" class="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-12 h-12 flex items-center justify-center transition-transform transform hover:scale-110">
+                <!-- Icono Play -->
+                <svg id="play-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <!-- Icono Pausa -->
+                <svg id="pause-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </button>
+            <button id="restart-btn" class="bg-gray-600 hover:bg-gray-700 text-white rounded-full w-12 h-12 flex items-center justify-center transition-transform transform hover:scale-110">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h5M20 20v-5h-5" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12a8 8 0 018-8v0a8 8 0 018 8v0a8 8 0 01-8 8v0a8 8 0 01-8-8v0z" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const scenes = [
+            {
+                type: 'intro',
+                duration: 5000,
+                content: {
+                    line1: "Hola, mi nombre es",
+                    name: "Cristian Jofré Donoso",
+                    title: "Director de Marketing y Transformación Digital"
+                }
+            },
+            {
+                type: 'text',
+                duration: 8000,
+                content: {
+                    text: "Me dirijo a ustedes con gran interés por la vacante de Director de Marketing. Dada mi trayectoria de más de una década como Director especializado en transformación digital y crecimiento empresarial, estoy seguro de que mi perfil es ideal para aportar valor a su organización."
+                }
+            },
+            {
+                type: 'stats',
+                duration: 12000,
+                content: {
+                    title: "He demostrado mi capacidad para generar resultados medibles.",
+                    stats: [
+                        { value: "+17%", label: "Crecimiento B2C" },
+                        { value: "+12%", label: "Crecimiento B2B" },
+                        { value: "500+", label: "Proyectos Digitales" },
+                        { value: "45%", label: "Mejora en Eficiencia" }
+                    ]
+                }
+            },
+            {
+                type: 'skills',
+                duration: 9000,
+                content: {
+                    text: "Estoy convencido de que mi experiencia integrando tecnologías como Inteligencia Artificial y Big Data con marketing puede contribuir directamente a sus objetivos corporativos."
+                }
+            },
+            {
+                type: 'cta',
+                duration: 7000,
+                content: {
+                    text: "Agradezco mucho su tiempo y consideración. Quedo a su entera disposición para conversar sobre cómo mi visión estratégica puede impulsar el éxito de su equipo."
+                }
+            },
+            {
+                type: 'outro',
+                duration: 6000,
+                content: {
+                    name: "Cristian Jofré Donoso",
+                    credentials: "Periodista y Máster en Marketing Digital y Analítica Web"
+                }
+            }
+        ];
+
+        const videoContainer = document.getElementById('video-container');
+        const progressBar = document.getElementById('progress-bar');
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        const playIcon = document.getElementById('play-icon');
+        const pauseIcon = document.getElementById('pause-icon');
+
+        let currentSceneIndex = 0;
+        let isPlaying = false;
+        let sceneTimeout;
+
+        function renderScene(index) {
+            const sceneData = scenes[index];
+            let html = '';
+
+            switch(sceneData.type) {
+                case 'intro':
+                    html = `
+                        <div class="scene text-center">
+                            <div class="fade-in-up">
+                                <p class="text-2xl md:text-3xl text-gray-400">${sceneData.content.line1}</p>
+                                <h1 class="text-4xl md:text-6xl font-bold my-4 text-glow text-blue-400">${sceneData.content.name}</h1>
+                                <h2 class="text-xl md:text-2xl text-gray-300">${sceneData.content.title}</h2>
+                            </div>
+                        </div>`;
+                    break;
+                case 'stats':
+                    html = `
+                        <div class="scene text-center w-full">
+                            <div class="fade-in-up w-full">
+                                <p class="text-xl md:text-2xl mb-8">${sceneData.content.title}</p>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    ${sceneData.content.stats.map(stat => `
+                                        <div class="stat-card p-4 rounded-lg text-center">
+                                            <p class="text-3xl md:text-5xl font-bold text-blue-400">${stat.value}</p>
+                                            <p class="text-sm md:text-base text-gray-300 mt-2">${stat.label}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>`;
+                    break;
+                case 'skills':
+                     html = `
+                        <div class="scene text-center">
+                            <div class="fade-in-up">
+                                <p class="text-xl md:text-3xl leading-relaxed">${sceneData.content.text}</p>
+                                <div class="flex justify-center space-x-8 mt-8 text-blue-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3" /></svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                                </div>
+                            </div>
+                        </div>`;
+                    break;
+                case 'outro':
+                    html = `
+                         <div class="scene text-center">
+                             <div class="fade-in-up">
+                                <h1 class="text-3xl md:text-5xl font-bold text-glow text-blue-400">${sceneData.content.name}</h1>
+                                <p class="text-lg md:text-xl text-gray-300 mt-4">${sceneData.content.credentials}</p>
+                             </div>
+                         </div>`;
+                    break;
+                default: // 'text', 'cta'
+                     html = `
+                        <div class="scene text-center">
+                            <p class="text-xl md:text-3xl leading-relaxed fade-in-up">${sceneData.content.text}</p>
+                        </div>`;
+                    break;
+
+            }
+            videoContainer.innerHTML = html;
+            // Forzar reflow para reiniciar la animación
+            const sceneElement = videoContainer.querySelector('.scene');
+            if (sceneElement) {
+                void sceneElement.offsetWidth;
+                sceneElement.classList.add('active');
+            }
+        }
+
+        function playNextScene() {
+            if (!isPlaying || currentSceneIndex >= scenes.length) {
+                pause();
+                if (currentSceneIndex >= scenes.length) {
+                    currentSceneIndex = scenes.length;
+                    updateProgress();
+                }
+                return;
+            }
+
+            renderScene(currentSceneIndex);
+            updateProgress();
+
+            sceneTimeout = setTimeout(() => {
+                currentSceneIndex++;
+                playNextScene();
+            }, scenes[currentSceneIndex].duration);
+        }
+
+        function updateProgress() {
+            const progress = (currentSceneIndex / scenes.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+        
+        function play() {
+            isPlaying = true;
+            playIcon.classList.add('hidden');
+            pauseIcon.classList.remove('hidden');
+            playNextScene();
+        }
+
+        function pause() {
+            isPlaying = false;
+            clearTimeout(sceneTimeout);
+            playIcon.classList.remove('hidden');
+            pauseIcon.classList.add('hidden');
+        }
+
+        function restart() {
+            pause();
+            currentSceneIndex = 0;
+            progressBar.style.width = `0%`;
+            renderScene(0); // Muestra la primera escena en estado pausado
+        }
+        
+        playPauseBtn.addEventListener('click', () => {
+            if (isPlaying) {
+                pause();
+            } else {
+                 if (currentSceneIndex >= scenes.length) {
+                    restart();
+                }
+                play();
+            }
+        });
+
+        restartBtn.addEventListener('click', restart);
+
+        // Iniciar en el primer frame
+        renderScene(0);
+
+    </script>
+
+</body>
+</html>
